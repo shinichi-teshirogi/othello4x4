@@ -3,37 +3,90 @@ import { CellText } from '../types/CellText'
 
 export const useGameController = () => {
     const [isFirst, setIsFirst] = useState(true)
-    const [cells, setCells] = useState<CellText[]>(Array(16).fill(' '))
+//    const [cells, setCells] = useState<CellText[]>(Array(16).fill(' '))
+    const [cells, setCells] = useState<CellText[]>([
+        ' ', ' ', ' ', ' ',
+        ' ', 'O', 'X', ' ',
+        ' ', 'X', 'O', ' ',
+        ' ', ' ', ' ', ' ',
+    ])
+
+    const directions = [
+        [-1, -1], [ 0, -1], [1, -1],
+        [-1,  0],           [1,  0],
+        [-1,  1], [ 0,  1], [1,  1],
+    ]
+
+    const canPlaceHere = (index: number, player: 'O' | 'X') => {
+        const x = index % 4
+        const y = Math.floor(index / 4)
+
+        for (const [dx, dy] of directions) {
+            let nx = x + dx
+            let ny = y + dy
+            let foundEnemy = false
+
+            while (0 <= nx && nx < 4 && 0 <= ny && ny < 4) {
+                const nextIndex = nx + ny * 4
+                if (cells[nextIndex] === ' ') break
+                if (cells[nextIndex] !== player) {
+                    foundEnemy = true
+                }
+                else {
+                    if (foundEnemy) return true
+                    break
+                }
+                nx += dx
+                ny += dy
+            }
+        }
+        return false
+    }
+
+    const flipCells = (index: number, player: 'O' | 'X') => {
+        const x = index % 4
+        const y = Math.floor(index / 4)
+
+        const newCells = [...cells]
+
+        for (const [dx, dy] of directions) {
+            let nx = x + dx
+            let ny = y + dy
+            let placeIndexs = []
+
+            while (0 <= nx && nx < 4 && 0 <= ny && ny < 4) {
+                const nextIndex = nx + ny * 4
+                if (newCells[nextIndex] === ' ') break
+                if (newCells[nextIndex] !== player) {
+                    placeIndexs.push(nextIndex)
+                }
+                else {
+                    for (const flipIndex of placeIndexs) {
+                        newCells[flipIndex] = player
+                    }
+                    break
+                }
+                nx += dx
+                ny += dy
+            }
+        }
+        newCells[index] = player
+        setCells(newCells)
+    }
+
     const cellClick = (i: number) => {
         if (isWin) return
         if (cells[i] !== ' ') return
-        setCells((olds) => {
-            olds[i] = isFirst ? 'O' : 'X'
-            return [...olds]
-        })
+
+        const player = isFirst ? 'O' : 'X'
+        if (!canPlaceHere(i, player)) return
+
+        flipCells(i, player)
         setIsFirst((old) => !old)
     }
+
     const nowPlayer: CellText = isFirst ? 'O' : 'X'
-    const victoryConditions = [
-        [ 0, 1, 2, 3],
-        [ 4, 5, 6, 7],
-        [ 8, 9,10,11],
-        [12,13,14,15],
-        [ 0, 4, 8,12],
-        [ 1, 5, 9,13],
-        [ 2, 6,10,14],
-        [ 3, 7,11,15],
-        [ 0, 5,10,15],
-        [ 3, 6, 9,12],
-    ]
-    const isWin = victoryConditions.some((victoryCondition) => {
-        const [a, b, c, d] = victoryCondition
-        if (cells[a] === ' ') return false
-        if (cells[a] !== cells[b]) return false
-        if (cells[a] !== cells[c]) return false
-        if (cells[a] !== cells[d]) return false
-        return true
-    })
+    const isWin = false
     const winner: CellText = isFirst ? 'X' : 'O'
 
     return { cells, nowPlayer, winner, isWin, cellClick}
