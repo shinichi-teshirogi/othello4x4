@@ -1,23 +1,27 @@
-import { Box, Heading } from '@chakra-ui/react'
+import { Box, Button, Heading } from '@chakra-ui/react'
 import { Cell } from './Cell'
 import { useGameController } from '../hooks/useGameController'
 
 export const Board = () => {
-    const { cells, winner, nowPlayer, isWin, cellClick } = useGameController()
+    const { cells, winner, nowPlayer, isWin, cellClick, passTurn, isPassRequired } = useGameController()
+
     return (
         <Box>
             <Heading>{isWin ? `${winner} is win!` : `${nowPlayer}'s turn`}</Heading>
-            <div style={{
+            <Box style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 48px)',
                 gap: '0px',
             }}>
             {cells.map((cell, index) => {
                 return (
-                    <Cell text={cell} onClick={() => cellClick(index)} />
+                    <Cell key={index} text={cell} onClick={() => cellClick(index)} />
                 )
             })}
-            </div>
+            </Box>
+            <Box>
+                <Button onClick={passTurn} isDisabled={!isPassRequired} mt={4}>Pass</Button>
+            </Box>
         </Box>
     )
 }

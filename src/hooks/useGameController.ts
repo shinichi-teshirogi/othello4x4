@@ -3,7 +3,6 @@ import { CellText } from '../types/CellText'
 
 export const useGameController = () => {
     const [isFirst, setIsFirst] = useState(true)
-//    const [cells, setCells] = useState<CellText[]>(Array(16).fill(' '))
     const [cells, setCells] = useState<CellText[]>([
         ' ', ' ', ' ', ' ',
         ' ', 'O', 'X', ' ',
@@ -20,6 +19,8 @@ export const useGameController = () => {
     const canPlaceHere = (index: number, player: 'O' | 'X') => {
         const x = index % 4
         const y = Math.floor(index / 4)
+
+        if (cells[index] !== ' ') return false
 
         for (const [dx, dy] of directions) {
             let nx = x + dx
@@ -85,9 +86,15 @@ export const useGameController = () => {
         setIsFirst((old) => !old)
     }
 
+    const passTurn = () => {
+        setIsFirst((old) => !old)
+    }
+
     const nowPlayer: CellText = isFirst ? 'O' : 'X'
+    const isPassRequired = !cells.some((_, i) => canPlaceHere(i, nowPlayer))
+
     const isWin = false
     const winner: CellText = isFirst ? 'X' : 'O'
 
-    return { cells, nowPlayer, winner, isWin, cellClick}
+    return { cells, nowPlayer, winner, isWin, isPassRequired, cellClick, passTurn}
 }
