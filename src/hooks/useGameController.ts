@@ -93,8 +93,21 @@ export const useGameController = () => {
     const nowPlayer: CellText = isFirst ? 'O' : 'X'
     const isPassRequired = !cells.some((_, i) => canPlaceHere(i, nowPlayer))
 
-    const isWin = false
-    const winner: CellText = isFirst ? 'X' : 'O'
+    const isGameFinished = () => {
+        const boardFull = !cells.includes(' ')
+        const noMoveLeft = !cells.some((_, i) => canPlaceHere(i, 'O') || canPlaceHere(i, 'X'))
 
-    return { cells, nowPlayer, winner, isWin, isPassRequired, cellClick, passTurn}
+        return boardFull || noMoveLeft
+    }
+    const isWin = isGameFinished()
+    const oCount = cells.filter(cell => cell === 'O').length
+    const xCount = cells.filter(cell => cell === 'X').length
+    const winnerText = () => {
+        if (oCount > xCount) return `O win`
+        else if (xCount > oCount) return `X win`
+        else return 'draw'
+    }
+    const winner = winnerText()
+
+    return { cells, winner,nowPlayer, oCount, xCount,  isWin, isPassRequired, cellClick, passTurn}
 }
