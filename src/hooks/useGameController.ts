@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { CellText } from '../types/CellText'
 
 export const useGameController = () => {
-    const [isFirst, setIsFirst] = useState(true)
-    const [cells, setCells] = useState<CellText[]>([
+    const initialCells: CellText[] = [
         ' ', ' ', ' ', ' ',
         ' ', 'O', 'X', ' ',
         ' ', 'X', 'O', ' ',
         ' ', ' ', ' ', ' ',
-    ])
+    ]
+    const [isFirst, setIsFirst] = useState(true)
+    const [cells, setCells] = useState<CellText[]>(initialCells)
 
     const directions = [
         [-1, -1], [ 0, -1], [1, -1],
@@ -76,7 +77,7 @@ export const useGameController = () => {
     }
 
     const cellClick = (i: number) => {
-        if (isWin) return
+        if (isGameFinished) return
         if (cells[i] !== ' ') return
 
         const player = isFirst ? 'O' : 'X'
@@ -90,16 +91,22 @@ export const useGameController = () => {
         setIsFirst((old) => !old)
     }
 
-    const nowPlayer: CellText = isFirst ? 'O' : 'X'
-    const isPassRequired = !cells.some((_, i) => canPlaceHere(i, nowPlayer))
-
-    const isGameFinished = () => {
+    const isGameFinishedValue = () => {
         const boardFull = !cells.includes(' ')
         const noMoveLeft = !cells.some((_, i) => canPlaceHere(i, 'O') || canPlaceHere(i, 'X'))
 
         return boardFull || noMoveLeft
     }
-    const isWin = isGameFinished()
+
+    const resetBoard = () => {
+        setCells(initialCells)
+        setIsFirst(true)
+    }
+
+    const nowPlayer: CellText = isFirst ? 'O' : 'X'
+
+    const isGameFinished = isGameFinishedValue()
+    const isPassRequired = !cells.some((_, i) => canPlaceHere(i, nowPlayer)) && !isGameFinished
     const oCount = cells.filter(cell => cell === 'O').length
     const xCount = cells.filter(cell => cell === 'X').length
     const winnerText = () => {
@@ -109,5 +116,5 @@ export const useGameController = () => {
     }
     const winner = winnerText()
 
-    return { cells, winner,nowPlayer, oCount, xCount,  isWin, isPassRequired, cellClick, passTurn}
+    return { cells, winner,nowPlayer, oCount, xCount, isGameFinished, isPassRequired, cellClick, passTurn, resetBoard}
 }

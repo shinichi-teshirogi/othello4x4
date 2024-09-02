@@ -3,11 +3,11 @@ import { Cell } from './Cell'
 import { useGameController } from '../hooks/useGameController'
 
 export const Board = () => {
-    const { cells, winner, nowPlayer, oCount, xCount, isWin, isPassRequired, cellClick, passTurn } = useGameController()
+    const { cells, winner, nowPlayer, oCount, xCount, isGameFinished, isPassRequired, cellClick, passTurn, resetBoard } = useGameController()
 
     return (
         <Box>
-            <Heading>{isWin ? `${winner}` : `${nowPlayer}'s turn`}</Heading>
+            <Heading>{isGameFinished ? `${winner}` : `${nowPlayer}'s turn`}</Heading>
             <Box>{`O: ${oCount}  X: ${xCount}`}</Box>
             <Box style={{
                 display: 'grid',
@@ -21,7 +21,8 @@ export const Board = () => {
             })}
             </Box>
             <Box>
-                <Button onClick={passTurn} isDisabled={!isPassRequired} mt={4}>Pass</Button>
+                <Button onClick={passTurn} isDisabled={!isPassRequired} m={2}>Pass</Button>
+                <Button onClick={resetBoard} isDisabled={!isGameFinished} m={2}>Restart</Button>
             </Box>
         </Box>
     )
