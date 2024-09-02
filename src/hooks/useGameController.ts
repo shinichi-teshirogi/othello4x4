@@ -17,61 +17,46 @@ export const useGameController = () => {
         [-1,  1], [ 0,  1], [1,  1],
     ]
 
-    const canPlaceHere = (index: number, player: 'O' | 'X') => {
+    const getFlipIndexes = (index: number, player: 'O' | 'X') => {
         const x = index % 4
         const y = Math.floor(index / 4)
-
-        if (cells[index] !== ' ') return false
+        let flipIndexes: number[] = []
 
         for (const [dx, dy] of directions) {
             let nx = x + dx
             let ny = y + dy
-            let foundEnemy = false
+            let potentialFlips: number[] = []
 
             while (0 <= nx && nx < 4 && 0 <= ny && ny < 4) {
                 const nextIndex = nx + ny * 4
                 if (cells[nextIndex] === ' ') break
                 if (cells[nextIndex] !== player) {
-                    foundEnemy = true
+                    potentialFlips.push(nextIndex)
                 }
                 else {
-                    if (foundEnemy) return true
+                    flipIndexes = flipIndexes.concat(potentialFlips)
                     break
                 }
                 nx += dx
                 ny += dy
             }
         }
-        return false
+        return flipIndexes
+    }
+
+    const canPlaceHere = (index: number, player: 'O' | 'X') => {
+        if (cells[index] !== ' ') return false
+        return getFlipIndexes(index, player).length > 0
     }
 
     const flipCells = (index: number, player: 'O' | 'X') => {
-        const x = index % 4
-        const y = Math.floor(index / 4)
-
         const newCells = [...cells]
+        const flipIndexes = getFlipIndexes(index, player)
 
-        for (const [dx, dy] of directions) {
-            let nx = x + dx
-            let ny = y + dy
-            let placeIndexs = []
+        flipIndexes.forEach(flipIndex => {
+            newCells[flipIndex] = player
+        })
 
-            while (0 <= nx && nx < 4 && 0 <= ny && ny < 4) {
-                const nextIndex = nx + ny * 4
-                if (newCells[nextIndex] === ' ') break
-                if (newCells[nextIndex] !== player) {
-                    placeIndexs.push(nextIndex)
-                }
-                else {
-                    for (const flipIndex of placeIndexs) {
-                        newCells[flipIndex] = player
-                    }
-                    break
-                }
-                nx += dx
-                ny += dy
-            }
-        }
         newCells[index] = player
         setCells(newCells)
     }
